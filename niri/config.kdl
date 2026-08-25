@@ -7,7 +7,7 @@ overview {
     // Control how much workspaces shrink down when you open the overview.
     // Accepts values from 0.0 to 0.75. Lower numbers make the overview smaller.
     // Default is typically 0.25 (making workspaces 4x smaller than normal).
-    zoom 0.95
+    zoom 0.75
 
     // Optional: Turn workspace shadows off/on inside the overview layout
     workspace-shadow { off; }
@@ -177,7 +177,7 @@ layout {
         off
 
         // How many logical pixels the ring extends out from the windows.
-        width 1
+        width 2
 
         // Colors can be set in a variety of ways:
         // - CSS named colors: "red"
@@ -185,13 +185,13 @@ layout {
         // - CSS-like notation: "rgb(255, 127, 0)", rgba(), hsl() and a few others.
 
         // Color of the ring on the active monitor.
-        active-color "white"
+        active-color "c0c0c0ff"
 
         // Color of the ring on inactive monitors.
         //
         // The focus ring only draws around the active window, so the only place
         // where you can see its inactive-color is on other monitors.
-        inactive-color "#505050"
+        inactive-color "333333ee"
 
         // You can also use gradients. They take precedence over solid colors.
         // Gradients are rendered the same as CSS linear-gradient(angle, from, to).
@@ -215,12 +215,12 @@ layout {
         // If you enable the border, you probably want to disable the focus ring.
         // off
 
-        width 1
-        active-color "white"
-        inactive-color "#505050"
+        width 2
+        active-color "c0c0c0ff"
+        inactive-color "333333ee"
 
         // Color of the border around windows that request your attention.
-        urgent-color "#9b0000"
+        urgent-color "#ff2400"
 
         // Gradients can use a few different interpolation color spaces.
         // For example, this is a pastel rainbow gradient via in="oklch longer hue".
@@ -284,20 +284,13 @@ layout {
 // Note that running niri as a session supports xdg-desktop-autostart,
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
+// To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
+// example: spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
 
-// This line starts noctalia, a commonly used shell for Wayland compositors.
+spawn-at-startup "sh" "-c" "trap 'pkill xremap' EXIT; xremap /home/rahul/.config/xremap/config.yml"
 spawn-at-startup "noctalia"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
-spawn-at-startup "sh" "-c" "trap 'pkill xremap' EXIT; xremap /home/rahul/.config/xremap/config.yml"
-// spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
-// spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
-
-
-
-
-// To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
-// spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
 
 hotkey-overlay {
     // Uncomment this line to disable the "Important Hotkeys" pop-up at startup.
@@ -345,25 +338,9 @@ window-rule {
 }
 
 window-rule {
-    match app-id="^fuzzel$"
+    // Matches the game engine instead of the Wine desktop container
+    match app-id="^.*cricket.*$" 
     open-floating true
-    default-floating-position x=0 y=0
-    default-window-height { proportion 0.6; }
-    default-column-width { proportion 0.4; }
-}
-
-window-rule {
-    match app-id="^org\\.gnome\\.GPaste\\.Ui$"
-    
-    // Force the window to spawn as floating
-    open-floating true
-    
-    // Optional: Center it perfectly on the screen
-    default-floating-position x=0 y=0 
-    
-    // Optional: Constrain the size so it looks like a clean clipboard widget
-    default-window-height { proportion 0.5; }
-    default-column-width { proportion 0.3; }
 }
 
 
@@ -412,13 +389,13 @@ binds {
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+T hotkey-overlay-title="Open Terminal" { spawn "gnome-terminal"; }
-    Mod+R hotkey-overlay-title="Open fuzzel" { spawn "fuzzel"; }
     Mod+B hotkey-overlay-title="Open Browser" { spawn "librewolf"; }
     Mod+E hotkey-overlay-title="Open File browser" { spawn "nautilus"; }
-    Mod+C { spawn "sh" "-c" "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
-    Mod+N { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
-    Mod+W { spawn "noctalia" "msg" "wallpaper-random"; }
-    Alt+Z { spawn "noctalia" "msg" "bar-toggle"; }
+    Mod+C hotkey-overlay-title="Toggle clipboard" { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+    Mod+N hotkey-overlay-title="Toggle notifications" { spawn "noctalia" "msg" "panel-toggle" "control-center" "notifications"; }
+    Mod+W hotkey-overlay-title="Change wallpaper" { spawn "noctalia" "msg" "wallpaper-random"; }
+    Mod+S hotkey-overlay-title="Toggle session menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
+    Alt+Z hotkey-overlay-title="Toggle noctalia bar" { spawn "noctalia" "msg" "bar-toggle"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
@@ -429,8 +406,8 @@ binds {
     // The allow-when-locked=true property makes them work even when the session is locked.
     // Using spawn-sh allows to pass multiple arguments together with the command.
     // "-l 1.0" limits the volume to 100%.
-    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.05+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.05-"; }
     XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
     Shift+XF86AudioMute  allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
 
@@ -611,20 +588,21 @@ binds {
     Mod+Period { expel-window-from-column; }
 
     // Cycle through widths set in preset-column-widths.
-    Alt+X { switch-preset-column-width; }
+    Alt+Shift+X {switch-preset-column-width; }
+    
     // Cycling through the presets in reverse order is also possible.
     Mod+Shift+R { switch-preset-column-width-back; }
-
     Mod+Ctrl+Shift+R { switch-preset-window-height; }
     Mod+Ctrl+R { reset-window-height; }
-
-    Alt+Shift+F { fullscreen-window; }
 
     // While maximize-column leaves gaps and borders around the window,
     // maximize-window-to-edges doesn't: the window expands to the edges of the screen.
     // This bind corresponds to normal window maximizing,
     // e.g. by double-clicking on the titlebar.
-    Alt+F { maximize-window-to-edges; }
+    Alt+F { fullscreen-window; }
+    Alt+Shift+F { maximize-column; }
+    Alt+X { maximize-window-to-edges; }
+   
 
     // Expand the focused column to space not taken up by other fully visible columns.
     // Makes the column "fill the rest of the space".
@@ -654,9 +632,6 @@ binds {
     Mod+V       { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
     
-    // Open Noctalia Session Menu
-    Mod+M { spawn "noctalia" "msg" "panel-toggle" "session"; }
-
     // Toggle tabbed column display mode.
     // Windows in this column will appear as vertical tabs,
     // rather than stacked on top of each other.
@@ -687,9 +662,9 @@ binds {
     // The quit action (logout) will show a confirmation dialog to avoid accidental exits.
     Ctrl+Alt+O { quit; }
     Ctrl+Alt+L { spawn "noctalia" "msg" "session" "lock"; }
-    Ctrl+Alt+U { spawn "noctalia" "msg" "session" "lock-and-suspend"; }
-    Ctrl+Alt+S { spawn "poweroff"; }
-    Ctrl+Alt+R { spawn-sh "systemctl reboot"; }
+    Ctrl+Alt+U { spawn "systemctl" "suspend"; }
+    Ctrl+Alt+S { spawn "systemctl" "poweroff"; }
+    Ctrl+Alt+R { spawn "systemctl" "reboot"; }
 
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.
@@ -697,7 +672,7 @@ binds {
 }
 
 switch-events {
-    lid-close { spawn "noctalia" "msg" "session" "lock-and-suspend"; }
+    lid-close { spawn "systemctl" "suspend"; }
 }
 
 debug {
