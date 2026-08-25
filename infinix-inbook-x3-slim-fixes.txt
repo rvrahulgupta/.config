@@ -1,0 +1,30 @@
+// Trackpad not working //
+1. Open "/usr/lib/initcpio/install/block" as root.
+2. Comment out the line "add_checked_modules '/drivers/mfd/".
+3. Rebuild initramfs and reboot using - "sudo mkinitcpio -P && reboot".
+4. Install the pacman hook to survive future updates - 
+    "sudo mkdir -p /etc/pacman.d/hooks"
+    "sudo vim /etc/pacman.d/hooks/fix-touchpad-mfd.hook"
+5. Paste this entire thing in that file -
+    "[Trigger]
+Operation = Upgrade
+Type = Package
+Target = mkinitcpio
+
+[Action]
+Description = Re-commenting mfd modules to fix SYNA3602 touchpad
+When = PostTransaction
+Exec = /bin/sh -c "sed -i \"s|^    add_checked_modules '/drivers/mfd/'|    # add_checked_modules '/drivers/mfd/'|\" /usr/lib/initcpio/install/block && mkinitcpio -P""
+6. That's all. The trackpad should be working by now.
+
+
+// Audio not working //
+1. Install alsa-tools using - "sudo pacman -S alsa-tools".
+2. Open "hdajackretask".
+3. Select your sound device (Select a codec) on the top drop down.
+4. On the right side under 'Options', check "Show unconnected pins".
+5. Scroll down and find an unconnected pin "0x1b" and check "Override" and select "Internal speaker" from the dropdown.
+6. On the right bottom, click on "Apply now".
+7. Play audio and check if the sound is working now.
+8. If it is working, click on "Install boot override" and reboot the system.
+9. Check the sound after rebooting.
